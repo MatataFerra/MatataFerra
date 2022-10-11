@@ -5,9 +5,10 @@
 </p>
 
 
-- I'm  **web Developer JR. I love learning**
+- I'm  **web Developer. I love learning**
 - Currently Learning **Ruby on Rails** and **TypeScript** 
 - Willing to contribute on  **Varied Projects**
+- Visit my portfolio and see my projects: https://www.matiasferraro.com.ar/
 
 
 ### Feel Free to Contact me.....
