@@ -1,51 +1,22 @@
-## Hi there, I'm Matias Ferraro 
+# 🎨 Hi there, I'm **Matias Ferraro** 👋  
 
-<p align="center">
-<img width="20%" src="https://img.icons8.com/ios-filled/96/000000/programming.png"/>
-</p>
+🚀 **Web Developer | Crafting Web Solutions**  
+💡 Passionate about **React**, **TypeScript**, and building creative UIs  
+📚 Currently exploring **Ruby on Rails**  
+🌍 Portfolio: [matiasferraro.com.ar](https://www.matiasferraro.com.ar/)  
 
+---
 
-- I'm  **web Developer. I love learning**
-- Currently Learning **Ruby on Rails** and **TypeScript** 
-- Willing to contribute on  **Varied Projects**
-- Visit my portfolio and see my projects: https://www.matiasferraro.com.ar/
+#### 📬 Connect with me:  
+[![GitHub](https://img.shields.io/badge/GitHub-%23181717?style=for-the-badge&logo=github&logoColor=cyan)](https://github.com/matataferra)  [![LinkedIn](https://img.shields.io/badge/LinkedIn-%230A66C2?style=for-the-badge&logo=linkedin&logoColor=magenta)](https://www.linkedin.com/in/matiasgf/)  
 
+---
 
-### Feel Free to Contact me.....
+#### 🛠 Tech Stack:  
+![React](https://img.shields.io/badge/React-%2361DAFB?style=for-the-badge&logo=react&logoColor=black)  ![Node.js](https://img.shields.io/badge/Node.js-%23339933?style=for-the-badge&logo=node.js&logoColor=white)  ![TypeScript](https://img.shields.io/badge/TypeScript-%233178C6?style=for-the-badge&logo=typescript&logoColor=white)  
 
-<p>
-	<a href="https://github.com/matataferra"><img alt="github" width="10%" style="padding:5px" src="https://img.icons8.com/clouds/100/000000/github.png"/></a>
-	<a href="https://www.linkedin.com/in/matiasgf/"><img alt="linkedin" width="10%" style="padding:5px" src="https://img.icons8.com/clouds/100/000000/linkedin.png"/></a>
-</p>
+---
 
-### Programming Languages....
-
-<p>
-	<img width="10%" style="padding:5px" src="https://img.icons8.com/bubbles/200/000000/react.png"/>
-	<img width="10%" style="padding:5px" src="https://img.icons8.com/color/144/000000/nodejs.png"/>
-	<img width="10%" style="padding:5px" src="https://img.icons8.com/color/144/000000/javascript.png"/>
-</p>
-
-### My goals
-<a href="https://github.com/anuraghazra/github-readme-stats">
-  <img align="center" src="https://github-readme-stats.vercel.app/api?username=matataferra&show_icons=true&include_all_commits=true&theme=gotham" alt="Anurag's github stats" />
-</a>
-
-<a href="https://github.com/anuraghazra/github-readme-stats">
-  <img align="center" src="https://github-readme-stats.vercel.app/api/top-langs/?username=matataferra&layout=compact&theme=material-palenight" />
-</a>
-
-<!--
-**MatataFerra/MatataFerra** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
-
-Here are some ideas to get you started:
-
-- 🔭 I’m currently working on ...
-- 🌱 I’m currently learning ...
-- 👯 I’m looking to collaborate on ...
-- 🤔 I’m looking for help with ...
-- 💬 Ask me about ...
-- 📫 How to reach me: ...
-- 😄 Pronouns: ...
-- ⚡ Fun fact: ...
--->
+#### 📊 GitHub Stats:  
+![Matias' GitHub Stats](https://github-readme-stats.vercel.app/api?username=matataferra&show_icons=true&theme=radical&icon_color=cyan&title_color=magenta)  
+![Top Langs](https://github-readme-stats.vercel.app/api/top-langs/?username=matataferra&layout=compact&theme=radical&title_color=magenta)  
