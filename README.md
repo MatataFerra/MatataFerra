@@ -1,56 +1,46 @@
-<div align="center">
+<a href="https://www.eldiariodemati.com/">
+  <img src="./assets/header.svg" alt="Matias Ferraro — writer, developer, blogger. I build things for the web and write things for the soul." width="100%">
+</a>
 
-![Typing SVG](https://readme-typing-svg.demolab.com?font=Fira+Code&weight=600&size=28&duration=3000&pause=1000&color=A855F7&center=true&vCenter=true&width=600&lines=Hi%2C+I'm+Matias+Ferraro+%F0%9F%91%8B;Web+Developer+%26+Professional+Writer;Crafting+code+%26+stories+that+matter.)
+<img src="./assets/ticker.svg" alt="Write · Code · Travel · Read · Repeat" width="100%">
 
-<img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=12,20,27&height=120&section=header&animation=fadeIn" width="100%"/>
+<br>
 
-### 🚀 Web Developer · ✍️ Professional Writer · 🎨 UI Enthusiast
+> [!NOTE]
+> **Hola — I'm Matias.** I write code and I write prose, and I've stopped pretending they're different jobs. Both are about choosing the right word, cutting what doesn't serve the reader, and leaving things a little clearer than I found them.
+>
+> Full-stack developer, mostly in **TypeScript**. Writer and blogger at **[El Diario de Mati](https://www.eldiariodemati.com/)**, where I collect stories about travel, culture and everything in between.
 
-*"I build things for the web and write things for the soul."*
+<br>
 
-[![Portfolio](https://img.shields.io/badge/🌍%20eldiariodemati.com-%23A855F7?style=for-the-badge&logoColor=white)](https://www.eldiariodemati.com/)
-[![GitHub](https://img.shields.io/badge/GitHub-%23181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/matataferra)
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-%230A66C2?style=for-the-badge&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/matiasgf/)
+## ✺ Selected work
 
-</div>
+<p>
+  <a href="#"><!-- TODO: link a Prosa Limpia --><img src="./assets/card-prosalimpia.svg" alt="01 — Prosa Limpia: literary proofreading with AI" width="49%"></a>
+  <a href="https://www.eldiariodemati.com/"><img src="./assets/card-diario.svg" alt="02 — El Diario de Mati: stories, travel and culture" width="49%"></a>
+  <a href="#"><!-- TODO: link al repo de disposable-check --><img src="./assets/card-disposable.svg" alt="03 — disposable-check: spots throwaway emails" width="49%"></a>
+  <a href="#"><!-- TODO: link a Líneas (o borra esta tarjeta) --><img src="./assets/card-lineas.svg" alt="04 — Líneas: book recommendations as a map of influences" width="49%"></a>
+</p>
 
----
+<br>
 
-<div align="center">
+## ✺ Fresh off the press
 
-### 🛠 Tech Stack
+<!-- BLOG-POST-LIST:START -->
+<!-- BLOG-POST-LIST:END -->
 
-![React](https://img.shields.io/badge/React-%2361DAFB?style=for-the-badge&logo=react&logoColor=black)
-![Next.js](https://img.shields.io/badge/Next.js_16-%23000000?style=for-the-badge&logo=next.js&logoColor=white)
-![TypeScript](https://img.shields.io/badge/TypeScript-%233178C6?style=for-the-badge&logo=typescript&logoColor=white)
-![Node.js](https://img.shields.io/badge/Node.js-%23339933?style=for-the-badge&logo=node.js&logoColor=white)
-![Ruby on Rails](https://img.shields.io/badge/Ruby_on_Rails-%23CC0000?style=for-the-badge&logo=ruby-on-rails&logoColor=white)
+<sub>More stories → <a href="https://www.eldiariodemati.com/"><b>eldiariodemati.com</b></a></sub>
 
-</div>
+<br>
 
----
+<img src="./assets/colophon.svg" alt="Colophon — Set in TypeScript. Composed with Next.js, React, Astro & Svelte. Styled with Tailwind. Bound with Supabase, PostgreSQL & Prisma. Printed on Node & Vercel, with a little Ruby on Rails in the margins." width="100%">
 
-<div align="center">
+<br>
 
-### ✍️ Writing & Blog
+## ✺ Find me
 
-> Exploring tech, culture, and everything in between at **[eldiariodemati.com](https://www.eldiariodemati.com/)**  
-> Writing is how I make sense of the world — and share it.
+**[eldiariodemati.com](https://www.eldiariodemati.com/)** &nbsp;/&nbsp; **[LinkedIn](https://www.linkedin.com/in/matiasgf/)** &nbsp;/&nbsp; **[GitHub](https://github.com/matataferra?tab=repositories)**
 
-</div>
+<br>
 
----
-
-<div align="center">
-
-### 📊 GitHub Stats
-
-[![GitHub Streak](https://streak-stats.demolab.com?user=matataferra&theme=nightowl&hide_border=true&border_radius=12&ring=A855F7&fire=EC4899&currStreakLabel=A855F7)](https://git.io/streak-stats)
-
-![Matias' GitHub Stats](https://github-readme-stats.vercel.app/api?username=matataferra&show_icons=true&theme=nightowl&hide_border=true&border_radius=12&icon_color=A855F7&title_color=EC4899&ring_color=A855F7)
-
-![Top Langs](https://github-readme-stats.vercel.app/api/top-langs/?username=matataferra&layout=compact&theme=nightowl&hide_border=true&border_radius=12&title_color=EC4899)
-
-</div>
-
-<img src="https://capsule-render.vercel.app/api?type=waving&color=gradient&customColorList=12,20,27&height=100&section=footer&animation=fadeIn" width="100%"/>
+<img src="./assets/ticker-footer.svg" alt="Thanks for reading — nos leemos en el blog" width="100%">
