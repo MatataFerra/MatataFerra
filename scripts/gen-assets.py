@@ -1,192 +1,302 @@
-"""Genera los SVG glass del README (variantes dark/light)."""
-import pathlib, sys
+"""Genera los SVG estilo cartel risográfico del README.
 
-OUT = pathlib.Path(sys.argv[1] if len(sys.argv) > 1 else "assets")
-OUT.mkdir(parents=True, exist_ok=True)
+Uso: python3 riso.py <carpeta_salida> <node_modules/@fontsource>
 
-SERIF = "'Iowan Old Style','Palatino Linotype',Palatino,Georgia,'Times New Roman',serif"
-SANS = "-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Helvetica,Arial,sans-serif"
-MONO = "ui-monospace,'SF Mono','JetBrains Mono',Menlo,Consolas,monospace"
+Todo el texto se convierte a trazados (paths): GitHub sirve los SVG del repo
+con una CSP que puede bloquear fuentes incrustadas, así que no dependemos de
+ninguna fuente en el navegador de quien visita.
+"""
+import io, math, pathlib, sys
+import uharfbuzz as hb
+from fontTools.ttLib import TTFont
+from fontTools.pens.svgPathPen import SVGPathPen
+from fontTools.pens.transformPen import TransformPen
 
-THEMES = {
-    "dark": dict(
-        bg="#0A0A10", ink="#F4F1FA", muted="#A7A1B8", faint="#6E6880",
-        glass="#FFFFFF", glass_a=0.045, stroke_a=0.16, hi_a=0.22,
-        blobs=["#7C3AED", "#DB2777", "#4F46E5", "#A855F7"], blob_a=0.38,
-        grain_a=0.07, pill="#FFFFFF", pill_a=0.06,
-    ),
-    "light": dict(
-        bg="#F6F4FA", ink="#16131F", muted="#5B5569", faint="#8D8799",
-        glass="#FFFFFF", glass_a=0.55, stroke_a=0.9, hi_a=0.7,
-        blobs=["#C4B5FD", "#F9A8D4", "#A5B4FC", "#D8B4FE"], blob_a=0.85,
-        grain_a=0.05, pill="#16131F", pill_a=0.05,
-    ),
+OUT = pathlib.Path(sys.argv[1]); OUT.mkdir(parents=True, exist_ok=True)
+FS = pathlib.Path(sys.argv[2])
+
+# Tintas risográficas
+PAPER, INK = "#F3EEE3", "#1C1A22"
+PINK, BLUE, YELLOW, ORANGE = "#FF48B0", "#0078BF", "#FFE800", "#FF6C2F"
+
+FONTS = {
+    "Anton": "anton/files/anton-latin-400-normal.woff2",
+    "Grotesk": "space-grotesk/files/space-grotesk-latin-500-normal.woff2",
+    "Plex": "ibm-plex-mono/files/ibm-plex-mono-latin-500-normal.woff2",
+    "Serif": "instrument-serif/files/instrument-serif-latin-400-italic.woff2",
 }
+
+
+class Font:
+    def __init__(self, path):
+        self.tt = TTFont(str(path))
+        buf = io.BytesIO(); self.tt.flavor = None; self.tt.save(buf)
+        self.hbfont = hb.Font(hb.Face(buf.getvalue()))
+        self.upm = self.tt["head"].unitsPerEm
+        self.gs = self.tt.getGlyphSet()
+        self.order = self.tt.getGlyphOrder()
+
+    def shape(self, text):
+        b = hb.Buffer(); b.add_str(text); b.guess_segment_properties()
+        hb.shape(self.hbfont, b, {"kern": True, "liga": True})
+        return [(self.order[i.codepoint], p.x_advance, p.x_offset, p.y_offset)
+                for i, p in zip(b.glyph_infos, b.glyph_positions)]
+
+
+F = {k: Font(FS / v) for k, v in FONTS.items()}
+
+
+def width(text, fam, size, tracking=0):
+    f = F[fam]
+    return sum(a for _, a, _, _ in f.shape(text)) / f.upm * size + tracking * len(text)
+
+
+def d_of(text, fam, size, x, y, tracking=0, anchor="start"):
+    f = F[fam]; s = size / f.upm
+    w = width(text, fam, size, tracking)
+    x0 = x - (w if anchor == "end" else w / 2 if anchor == "middle" else 0)
+    pen = SVGPathPen(f.gs, ntos=lambda v: f"{v:.1f}".rstrip("0").rstrip("."))
+    cx = x0
+    for g, adv, xo, yo in f.shape(text):
+        f.gs[g].draw(TransformPen(pen, (s, 0, 0, -s, cx + xo * s, y - yo * s)))
+        cx += adv * s + tracking
+    return pen.getCommands()
+
+
+def txt(text, x, y, fam, size, fill=INK, tracking=0, anchor="start", extra=""):
+    return f'<path d="{d_of(text, fam, size, x, y, tracking, anchor)}" fill="{fill}" {extra}/>'
+
+
+def wrap(text, fam, size, maxw):
+    lines, cur = [], ""
+    for wd in text.split():
+        t = (cur + " " + wd).strip()
+        if width(t, fam, size) > maxw and cur:
+            lines.append(cur); cur = wd
+        else:
+            cur = t
+    return lines + [cur]
 
 
 def esc(s):
     return s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
 
-def blobs(t, w, h, uid, seed=0):
-    """Manchas de color que derivan lentamente (aurora)."""
-    c = t["blobs"]
-    spots = [
-        (0.18, 0.30, 0.34, c[0], "40 18", 19),
-        (0.78, 0.25, 0.30, c[1], "-36 24", 23),
-        (0.55, 0.85, 0.36, c[2], "28 -22", 27),
-        (0.95, 0.90, 0.22, c[3], "-24 -16", 21),
-    ]
-    out = []
-    for i, (x, y, r, col, d, dur) in enumerate(spots[seed:] + spots[:seed]):
-        out.append(
-            f'<circle cx="{x*w:.0f}" cy="{y*h:.0f}" r="{r*max(w,h):.0f}" fill="{col}">'
-            f'<animateTransform attributeName="transform" type="translate" '
-            f'values="0 0; {d}; 0 0" dur="{dur}s" repeatCount="indefinite" '
-            f'calcMode="spline" keySplines=".45 0 .55 1;.45 0 .55 1"/></circle>'
-        )
-    return f'<g id="b{uid}" opacity="{t["blob_a"]}">' + "".join(out) + "</g>"
+STYLE = "<style>.mul{mix-blend-mode:multiply}</style>"
 
 
-def defs(t, w, h, uid, card, seed=0):
-    x, y, cw, ch, rx = card
-    return f"""<defs>
-  {blobs(t, w, h, uid, seed)}
-  <filter id="soft{uid}" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="{max(w,h)*0.05:.0f}"/></filter>
-  <filter id="frost{uid}" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="{max(w,h)*0.08:.0f}"/></filter>
-  <filter id="grain{uid}"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 .5  0 0 0 0 .5  0 0 0 0 .5  0 0 0 1 0"/></filter>
-  <clipPath id="clip{uid}"><rect x="{x}" y="{y}" width="{cw}" height="{ch}" rx="{rx}"/></clipPath>
-  <linearGradient id="sheen{uid}" x1="0" y1="0" x2="1" y2="1">
-    <stop offset="0" stop-color="#fff" stop-opacity="{t['hi_a']*0.6}"/>
-    <stop offset=".45" stop-color="#fff" stop-opacity="0"/>
-  </linearGradient>
-  <linearGradient id="edge{uid}" x1="0" y1="0" x2="1" y2="1">
-    <stop offset="0" stop-color="#fff" stop-opacity="{t['stroke_a']*1.6 if t is THEMES['dark'] else t['stroke_a']}"/>
-    <stop offset=".5" stop-color="#fff" stop-opacity="{t['stroke_a']*0.4}"/>
-    <stop offset="1" stop-color="#fff" stop-opacity="{t['stroke_a']}"/>
-  </linearGradient>
-</defs>"""
+def common_defs(uid):
+    return f"""
+<filter id="grain{uid}" x="0" y="0" width="100%" height="100%">
+  <feTurbulence type="fractalNoise" baseFrequency="1.4" numOctaves="2" seed="7" stitchTiles="stitch"/>
+  <feColorMatrix values="0 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 -1.6 1.05"/>
+</filter>
+<filter id="rough{uid}"><feTurbulence type="fractalNoise" baseFrequency=".035" numOctaves="2" seed="3"/><feDisplacementMap in="SourceGraphic" scale="5"/></filter>
+<pattern id="dotsP{uid}" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(18)"><circle cx="6" cy="6" r="3.6" fill="{PINK}"/></pattern>
+<pattern id="dotsB{uid}" width="10" height="10" patternUnits="userSpaceOnUse" patternTransform="rotate(-15)"><circle cx="5" cy="5" r="2.6" fill="{BLUE}"/></pattern>
+<pattern id="dotsY{uid}" width="11" height="11" patternUnits="userSpaceOnUse" patternTransform="rotate(30)"><circle cx="5.5" cy="5.5" r="3.4" fill="{YELLOW}"/></pattern>"""
 
 
-def glass(t, uid, card):
-    """Panel esmerilado: copia más borrosa del fondo recortada + velo + borde."""
-    x, y, cw, ch, rx = card
-    return f"""<g clip-path="url(#clip{uid})">
-  <rect x="{x}" y="{y}" width="{cw}" height="{ch}" fill="{t['bg']}" opacity="{.35 if t is THEMES['dark'] else .2}"/>
-  <use href="#b{uid}" filter="url(#frost{uid})"/>
-  <rect x="{x}" y="{y}" width="{cw}" height="{ch}" fill="{t['glass']}" fill-opacity="{t['glass_a']}"/>
-  <rect x="{x}" y="{y}" width="{cw}" height="{ch}" fill="url(#sheen{uid})"/>
-</g>
-<rect x="{x+.5}" y="{y+.5}" width="{cw-1}" height="{ch-1}" rx="{rx}" fill="none" stroke="url(#edge{uid})"/>"""
-
-
-def frame(t, w, h, uid, card, body, seed=0, title=""):
-    return f"""<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 {w} {h}" width="{w}" height="{h}" role="img" aria-label="{esc(title)}">
+def svg(w, h, uid, body, title, bg=PAPER):
+    return f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {w} {h}" width="{w}" height="{h}" role="img" aria-label="{esc(title)}">
 <title>{esc(title)}</title>
-{defs(t, w, h, uid, card, seed)}
-<rect width="{w}" height="{h}" rx="24" fill="{t['bg']}"/>
-<g clip-path="url(#outer{uid})"><use href="#b{uid}" filter="url(#soft{uid})"/></g>
-<clipPath id="outer{uid}"><rect width="{w}" height="{h}" rx="24"/></clipPath>
-{glass(t, uid, card)}
-<rect width="{w}" height="{h}" rx="24" filter="url(#grain{uid})" opacity="{t['grain_a']}"/>
-{body}
+{STYLE}
+<defs>{common_defs(uid)}</defs>
+<rect width="{w}" height="{h}" fill="{bg}"/>
+<g style="isolation:isolate">{body}</g>
+<rect width="{w}" height="{h}" filter="url(#grain{uid})" opacity=".3" class="mul"/>
 </svg>"""
 
 
-def header(name, t):
-    w, h = 1200, 400
-    card = (56, 56, 1088, 288, 28)
+def asterisk(cx, cy, r, color, arms=8, spin=0):
+    t = r * .26
+    rects = "".join(
+        f'<rect x="{-t/2:.1f}" y="{-r}" width="{t:.1f}" height="{2*r}" rx="{t/2:.1f}" transform="rotate({180/arms*i:.1f})"/>'
+        for i in range(arms))
+    anim = (f'<animateTransform attributeName="transform" type="rotate" from="0" to="360" dur="{spin}s" repeatCount="indefinite"/>'
+            if spin else "")
+    return f'<g transform="translate({cx} {cy})"><g fill="{color}">{rects}{anim}</g></g>'
+
+
+def misreg(text, x, y, size, a=INK, b=PINK, dx=7, dy=5, fam="Anton"):
+    d = d_of(text, fam, size, 0, 0)
+    return (f'<path d="{d}" fill="{a}" class="mul" transform="translate({x} {y})"/>'
+            f'<g class="mul" transform="translate({x+dx} {y+dy})"><path d="{d}" fill="{b}">'
+            f'<animateTransform attributeName="transform" type="translate" values="0 0;-2 1;1 -1;0 0" dur="5s" repeatCount="indefinite"/>'
+            f'</path></g>')
+
+
+# ---------------------------------------------------------------- cabecera
+def header():
+    w, h = 1200, 600
+    mono = lambda s, x, y, fill=INK, anchor="start": txt(s, x, y, "Plex", 15, fill, 2.5, anchor)
     body = f"""
-<g font-family="{MONO}" font-size="14" letter-spacing="4" fill="{t['muted']}">
-  <text x="112" y="128">WRITER <tspan fill="{t['faint']}">/</tspan> DEVELOPER <tspan fill="{t['faint']}">/</tspan> BLOGGER</text>
+<circle cx="965" cy="345" r="215" fill="{YELLOW}" class="mul"/>
+<circle cx="1075" cy="170" r="135" fill="url(#dotsPh)" class="mul"/>
+<g transform="rotate(-4 430 395)">
+  <rect x="34" y="300" width="752" height="196" fill="{BLUE}" class="mul" filter="url(#roughh)"/>
 </g>
-<text x="108" y="218" font-family="{SERIF}" font-size="76" fill="{t['ink']}" letter-spacing="-1.5">Matias Ferraro</text>
-<text x="112" y="268" font-family="{SERIF}" font-style="italic" font-size="24" fill="{t['muted']}">I build things for the web and write things for the soul.</text>
-<g font-family="{MONO}" font-size="15" fill="{t['muted']}">
-  <text x="1088" y="300" text-anchor="end">~/code &amp;&amp; prose</text>
-  <rect x="1094" y="287" width="9" height="17" rx="1.5" fill="{t['blobs'][0] if t is THEMES['light'] else '#C4B5FD'}">
-    <animate attributeName="opacity" values="1;1;0;0" keyTimes="0;.5;.5;1" dur="1.1s" repeatCount="indefinite"/>
-  </rect>
-</g>
-<line x1="112" y1="300" x2="172" y2="300" stroke="{t['ink']}" stroke-opacity=".35" stroke-width="1.5"/>
+{misreg("MATIAS", 52, 288, 232, a=INK, b=PINK, dx=8, dy=6)}
+<g transform="rotate(-4 430 395)">{txt("FERRARO", 70, 474, "Anton", 196, PAPER, 2)}</g>
+{asterisk(1095, 470, 62, ORANGE, 8, spin=26)}
+<path d="M790 118 q22 -26 44 0 t44 0 t44 0 t44 0" fill="none" stroke="{INK}" stroke-width="5" stroke-linecap="round"/>
+{mono("N°01 — PORTFOLIO / FANZINE", 56, 62)}
+{mono("VOL. MMXXVI", 1144, 62, anchor="end")}
+{txt("I build things for the web", 812, 318, "Serif", 34)}
+{txt("and write things for the soul.", 812, 358, "Serif", 34)}
+{mono("WRITER", 56, 560)}{mono("×", 148, 560, PINK)}
+{mono("DEVELOPER", 172, 560)}{mono("×", 306, 560, BLUE)}
+{mono("BLOGGER", 330, 560)}
+{mono("ELDIARIODEMATI.COM", 1110, 560, anchor="end")}
+<path d="M1122 555 h20 m-7 -7 l7 7 l-7 7" fill="none" stroke="{INK}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>{""}
+<line x1="56" y1="530" x2="1144" y2="530" stroke="{INK}" stroke-width="2"/>
 """
-    (OUT / f"header-{name}.svg").write_text(
-        frame(t, w, h, "h", card, body, title="Matias Ferraro — Writer, Developer, Blogger"))
+    (OUT / "header.svg").write_text(svg(w, h, "h", body, "Matias Ferraro — writer, developer, blogger"))
 
 
-def wrap(text, n):
-    words, lines, cur = text.split(), [], ""
-    for wd in words:
-        if len(cur) + len(wd) + 1 > n:
-            lines.append(cur)
-            cur = wd
-        else:
-            cur = (cur + " " + wd).strip()
-    return lines + [cur]
+# ---------------------------------------------------------------- tarjetas
+def stamp(x, y, text, color, u, rot=-9):
+    tw = width(text, "Plex", 15, 3) + 28
+    return f"""<g transform="rotate({rot} {x} {y})">
+  <rect x="{x - tw/2:.0f}" y="{y-20}" width="{tw:.0f}" height="40" fill="none" stroke="{color}" stroke-width="3" filter="url(#rough{u})"/>
+  {txt(text, x, y + 5.5, "Plex", 15, color, 3, "middle")}
+</g>"""
 
 
-def card(slug, title, kicker, desc, tags, status, accent_idx, seed, name, t):
-    w, h = 600, 280
-    c = (14, 14, 572, 252, 22)
-    acc = t["blobs"][accent_idx] if name == "light" else "#fff"
-    dot = (["#7C3AED", "#DB2777", "#4F46E5", "#9333EA"] if name == "light" else ["#C4B5FD", "#F9A8D4", "#A5B4FC", "#E9D5FF"])[accent_idx]
-    lines = wrap(desc, 52)
-    desc_svg = "".join(
-        f'<text x="46" y="{150 + i*24}">{esc(l)}</text>' for i, l in enumerate(lines[:2]))
-    # pastillas de tecnologías
-    px, pills = 46, []
-    for tag in tags:
-        tw = len(tag) * 7.6 + 22
-        pills.append(
-            f'<rect x="{px}" y="206" width="{tw:.0f}" height="26" rx="13" fill="{t["pill"]}" fill-opacity="{t["pill_a"]}" stroke="{t["pill"]}" stroke-opacity=".12"/>'
-            f'<text x="{px + tw/2:.0f}" y="223.5" text-anchor="middle">{esc(tag)}</text>')
-        px += tw + 8
-    sw = len(status) * 7.4 + 34
+def tags(x, y, items):
+    out, px = [], x
+    for t in items:
+        tw = width(t, "Plex", 13, .5) + 22
+        out.append(
+            f'<rect x="{px+3}" y="{y+3}" width="{tw:.0f}" height="28" fill="{INK}"/>'
+            f'<rect x="{px}" y="{y}" width="{tw:.0f}" height="28" fill="{PAPER}" stroke="{INK}" stroke-width="2"/>'
+            + txt(t, px + tw / 2, y + 18.5, "Plex", 13, INK, .5, "middle"))
+        px += tw + 10
+    return "".join(out)
+
+
+ART = {
+    # comillas gigantes: la escritura
+    "prosalimpia": lambda u: f"""
+<circle cx="478" cy="128" r="104" fill="url(#dotsB{u})" class="mul"/>
+{txt("“", 368, 300, "Serif", 380, PINK, extra='class="mul"')}
+""",
+    # sol y olas: el viaje
+    "diario": lambda u: f"""
+<circle cx="470" cy="135" r="98" fill="{YELLOW}" class="mul">
+  <animate attributeName="cy" values="135;125;135" dur="6s" repeatCount="indefinite"/></circle>
+<g fill="none" stroke="{BLUE}" stroke-width="10" stroke-linecap="round" class="mul">
+  <path d="M440 192 q22 -20 44 0 t44 0 t44 0"/>
+  <path d="M462 220 q22 -20 44 0 t44 0 t44 0"/>
+</g>
+<circle cx="510" cy="160" r="70" fill="url(#dotsP{u})" class="mul"/>
+""",
+    # sobre tachado: mails desechables
+    "disposable": lambda u: f"""
+<g transform="rotate(8 470 150) translate(10 -20) scale(.9)">
+  <rect x="370" y="80" width="200" height="140" fill="{BLUE}" class="mul"/>
+  <path d="M370 80 L470 160 L570 80" fill="none" stroke="{PAPER}" stroke-width="8" stroke-linejoin="round"/>
+</g>
+<g stroke="{ORANGE}" stroke-width="22" stroke-linecap="round" class="mul">
+  <line x1="410" y1="56" x2="555" y2="200"/><line x1="555" y1="56" x2="410" y2="200"/>
+</g>
+""",
+    # constelación: mapa de influencias
+    "lineas": lambda u: f"""
+<circle cx="470" cy="160" r="112" fill="url(#dotsY{u})" class="mul"/>
+<g stroke="{BLUE}" stroke-width="3" class="mul">
+  <line x1="390" y1="100" x2="480" y2="70"/><line x1="480" y1="70" x2="560" y2="140"/>
+  <line x1="390" y1="100" x2="440" y2="190"/><line x1="440" y1="190" x2="560" y2="140"/>
+  <line x1="440" y1="190" x2="520" y2="245"/><line x1="480" y1="70" x2="440" y2="190"/>
+</g>
+<g class="mul">
+  <circle cx="390" cy="100" r="14" fill="{PINK}"/><circle cx="480" cy="70" r="10" fill="{BLUE}"/>
+  <circle cx="560" cy="140" r="18" fill="{PINK}"/><circle cx="440" cy="190" r="22" fill="{ORANGE}">
+    <animate attributeName="r" values="22;26;22" dur="3s" repeatCount="indefinite"/></circle>
+  <circle cx="520" cy="245" r="9" fill="{BLUE}"/>
+</g>
+""",
+}
+
+
+def card(n, slug, title, kicker, desc, tg, status, scolor):
+    w, h = 600, 400
+    u = slug[:3]
+    tsize = min(68, 420 / width(title.upper(), "Anton", 1))
+    lines = wrap(desc, "Grotesk", 18, 520)
+    dsvg = "".join(txt(l, 40, 290 + i * 25, "Grotesk", 18, INK, extra='fill-opacity=".85"')
+                   for i, l in enumerate(lines[:2]))
     body = f"""
-<text x="46" y="70" font-family="{MONO}" font-size="12" letter-spacing="3" fill="{t['muted']}">{esc(kicker.upper())}</text>
-<g font-family="{MONO}" font-size="12" fill="{t['muted']}">
-  <rect x="{554 - sw:.0f}" y="52" width="{sw:.0f}" height="26" rx="13" fill="{t['pill']}" fill-opacity="{t['pill_a']}" stroke="{t['pill']}" stroke-opacity=".12"/>
-  <circle cx="{554 - sw + 16:.0f}" cy="65" r="3.5" fill="{dot}">
-    <animate attributeName="opacity" values="1;.35;1" dur="2.4s" repeatCount="indefinite"/>
-  </circle>
-  <text x="{554 - sw + 26:.0f}" y="69">{esc(status)}</text>
-</g>
-<text x="44" y="118" font-family="{SERIF}" font-size="36" fill="{t['ink']}" letter-spacing="-.5">{esc(title)}</text>
-<g font-family="{SANS}" font-size="16" fill="{t['muted']}">{desc_svg}</g>
-<g font-family="{MONO}" font-size="12" fill="{t['ink']}" fill-opacity=".8">{''.join(pills)}</g>
+{ART[slug](u)}
+<path d="{d_of(n, "Anton", 118, 34, 178)}" fill="none" stroke="{INK}" stroke-width="2.5"/>
+{txt(kicker.upper(), 40, 46, "Plex", 13, INK, 3)}
+{misreg(title.upper(), 38, 252, tsize, a=INK, b=scolor, dx=4, dy=3)}
+{dsvg}
+{tags(40, 344, tg)}
+{stamp(520, 352, status.upper(), scolor, u)}
+<rect x="1.5" y="1.5" width="{w-3}" height="{h-3}" fill="none" stroke="{INK}" stroke-width="3"/>
 """
-    (OUT / f"card-{slug}-{name}.svg").write_text(
-        frame(t, w, h, slug[:3], c, body, seed=seed, title=f"{title} — {desc}"))
+    (OUT / f"card-{slug}.svg").write_text(svg(w, h, u, body, f"{title} — {desc}"))
 
 
-def footer(name, t):
-    w, h = 1200, 120
-    c = (56, 28, 1088, 64, 32)
+# ---------------------------------------------------------------- cinta
+def ticker(name, words, bg, fg, sep_colors, title, speed=60):
+    w, size = 1200, 46
+    parts, x = [], 0
+    for i, wd in enumerate(words):
+        parts.append(txt(wd, x, 62, "Anton", size, fg, 1))
+        x += width(wd, "Anton", size, 1) + 34
+        parts.append(asterisk(x, 41, 17, sep_colors[i % len(sep_colors)], 6))
+        x += 51
+    period = x
+    reps = math.ceil(w / period) + 1
+    unit = "".join(parts)
+    row = f'<g id="u{name}">{unit}</g>' + "".join(
+        f'<use href="#u{name}" x="{period*r:.0f}"/>' for r in range(1, reps))
+    body = f"""<g>{row}
+  <animateTransform attributeName="transform" type="translate" from="0 0" to="{-period:.0f} 0" dur="{period/speed:.1f}s" repeatCount="indefinite"/>
+</g>"""
+    (OUT / f"{name}.svg").write_text(svg(w, 84, name[:2], body, title, bg=bg))
+
+
+# ---------------------------------------------------------------- colofón
+def colophon():
+    w, h = 1200, 340
+    text = ("Set in TypeScript. Composed with Next.js, React, Astro & Svelte. "
+            "Styled with Tailwind. Bound with Supabase, PostgreSQL & Prisma. "
+            "Printed on Node & Vercel — with a little Ruby on Rails in the margins.")
+    lines = wrap(text, "Serif", 40, 800)
+    tsp = "".join(txt(l, 330, 108 + i * 48, "Serif", 40) for i, l in enumerate(lines))
+    ly = 108 + len(lines) * 48 - 14
     body = f"""
-<text x="600" y="66" text-anchor="middle" font-family="{SERIF}" font-style="italic" font-size="19" fill="{t['muted']}">Thanks for stopping by — see you on the blog.</text>
+<circle cx="150" cy="170" r="118" fill="{PINK}" class="mul"/>
+<circle cx="215" cy="215" r="88" fill="url(#dotsBc)" class="mul"/>
+{txt("TOOLS", 150, 196, "Anton", 64, INK, 1, "middle")}
+{txt("COLOPHON", 56, 44, "Plex", 13, INK, 3)}
+{tsp}
+<line x1="330" y1="{ly}" x2="420" y2="{ly}" stroke="{ORANGE}" stroke-width="6" stroke-linecap="round"/>
+<rect x="1.5" y="1.5" width="{w-3}" height="{h-3}" fill="none" stroke="{INK}" stroke-width="3"/>
 """
-    (OUT / f"footer-{name}.svg").write_text(
-        frame(t, w, h, "f", c, body, seed=2, title="Thanks for stopping by"))
+    (OUT / "colophon.svg").write_text(svg(w, h, "c", body, "Colophon — " + text))
 
 
-PROJECTS = [
-    ("prosalimpia", "Prosa Limpia", "AI · Writing tool",
-     "Literary proofreading powered by AI, with streaming suggestions and a full revision history.",
-     ["Next.js", "Supabase", "DeepSeek", "Zustand"], "Live", 0, 0),
-    ("diario", "El Diario de Mati", "Blog · Travel writing",
-     "Stories, travel and culture — my personal blog, with a hand-built editorial design system.",
-     ["Astro", "Svelte 5", "Tailwind", "Nanostores"], "Live", 1, 1),
-    ("disposable", "disposable-check", "Library · TypeScript",
-     "Detects throwaway email addresses before they reach your sign-up form.",
-     ["TypeScript", "Node.js", "npm"], "In progress", 2, 2),
-    ("lineas", "Líneas", "Concept · Books × AI",
-     "Book recommendations drawn as a map of literary influences, built from the clues you leave.",
-     ["AI", "Graphs", "Literature"], "Sketching", 3, 3),
-]
-
-for name, t in THEMES.items():
-    header(name, t)
-    footer(name, t)
-    for p in PROJECTS:
-        card(*p, name, t)
-print("ok", sorted(x.name for x in OUT.iterdir()))
+header()
+card("01", "prosalimpia", "Prosa Limpia", "AI · Writing tool",
+     "Literary proofreading with AI — streaming suggestions and a full revision history.",
+     ["Next.js", "Supabase", "DeepSeek"], "Live", PINK)
+card("02", "diario", "El Diario de Mati", "Blog · Travel writing",
+     "Stories, travel and culture. My blog, with a hand-built editorial design system.",
+     ["Astro", "Svelte 5", "Tailwind"], "Live", BLUE)
+card("03", "disposable", "disposable-check", "Library · TypeScript",
+     "Spots throwaway email addresses before they reach your sign-up form.",
+     ["TypeScript", "Node.js", "npm"], "WIP", ORANGE)
+card("04", "lineas", "Líneas", "Concept · Books × AI",
+     "Book recommendations drawn as a map of literary influences, from the clues you leave.",
+     ["AI", "Graphs", "Literature"], "Sketch", BLUE)
+ticker("ticker", ["WRITE", "CODE", "TRAVEL", "READ", "REPEAT"], INK, PAPER,
+       [PINK, YELLOW, BLUE, ORANGE], "Write, code, travel, read, repeat")
+ticker("ticker-footer", ["THANKS FOR READING", "NOS LEEMOS EN EL BLOG"], PINK, INK,
+       [YELLOW, BLUE], "Thanks for reading — nos leemos en el blog", speed=45)
+colophon()
+for p in sorted(OUT.glob("*.svg")):
+    print(f"{p.name:24} {p.stat().st_size/1024:6.1f} KB")
