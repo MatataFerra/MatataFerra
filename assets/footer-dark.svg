@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1200 120" width="1200" height="120" role="img" aria-label="Thanks for stopping by">
+<title>Thanks for stopping by</title>
+<defs>
+  <g id="bf" opacity="0.38"><circle cx="660" cy="102" r="432" fill="#4F46E5"><animateTransform attributeName="transform" type="translate" values="0 0; 28 -22; 0 0" dur="27s" repeatCount="indefinite" calcMode="spline" keySplines=".45 0 .55 1;.45 0 .55 1"/></circle><circle cx="1140" cy="108" r="264" fill="#A855F7"><animateTransform attributeName="transform" type="translate" values="0 0; -24 -16; 0 0" dur="21s" repeatCount="indefinite" calcMode="spline" keySplines=".45 0 .55 1;.45 0 .55 1"/></circle><circle cx="216" cy="36" r="408" fill="#7C3AED"><animateTransform attributeName="transform" type="translate" values="0 0; 40 18; 0 0" dur="19s" repeatCount="indefinite" calcMode="spline" keySplines=".45 0 .55 1;.45 0 .55 1"/></circle><circle cx="936" cy="30" r="360" fill="#DB2777"><animateTransform attributeName="transform" type="translate" values="0 0; -36 24; 0 0" dur="23s" repeatCount="indefinite" calcMode="spline" keySplines=".45 0 .55 1;.45 0 .55 1"/></circle></g>
+  <filter id="softf" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="60"/></filter>
+  <filter id="frostf" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="96"/></filter>
+  <filter id="grainf"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 .5  0 0 0 0 .5  0 0 0 0 .5  0 0 0 1 0"/></filter>
+  <clipPath id="clipf"><rect x="56" y="28" width="1088" height="64" rx="32"/></clipPath>
+  <linearGradient id="sheenf" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#fff" stop-opacity="0.132"/>
+    <stop offset=".45" stop-color="#fff" stop-opacity="0"/>
+  </linearGradient>
+  <linearGradient id="edgef" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#fff" stop-opacity="0.256"/>
+    <stop offset=".5" stop-color="#fff" stop-opacity="0.064"/>
+    <stop offset="1" stop-color="#fff" stop-opacity="0.16"/>
+  </linearGradient>
+</defs>
+<rect width="1200" height="120" rx="24" fill="#0A0A10"/>
+<g clip-path="url(#outerf)"><use href="#bf" filter="url(#softf)"/></g>
+<clipPath id="outerf"><rect width="1200" height="120" rx="24"/></clipPath>
+<g clip-path="url(#clipf)">
+  <rect x="56" y="28" width="1088" height="64" fill="#0A0A10" opacity="0.35"/>
+  <use href="#bf" filter="url(#frostf)"/>
+  <rect x="56" y="28" width="1088" height="64" fill="#FFFFFF" fill-opacity="0.045"/>
+  <rect x="56" y="28" width="1088" height="64" fill="url(#sheenf)"/>
+</g>
+<rect x="56.5" y="28.5" width="1087" height="63" rx="32" fill="none" stroke="url(#edgef)"/>
+<rect width="1200" height="120" rx="24" filter="url(#grainf)" opacity="0.07"/>
+
+<text x="600" y="66" text-anchor="middle" font-family="'Iowan Old Style','Palatino Linotype',Palatino,Georgia,'Times New Roman',serif" font-style="italic" font-size="19" fill="#A7A1B8">Thanks for stopping by — see you on the blog.</text>
+
+</svg>

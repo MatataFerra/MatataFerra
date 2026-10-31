@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 600 280" width="600" height="280" role="img" aria-label="Líneas — Book recommendations drawn as a map of literary influences, built from the clues you leave.">
+<title>Líneas — Book recommendations drawn as a map of literary influences, built from the clues you leave.</title>
+<defs>
+  <g id="blin" opacity="0.38"><circle cx="570" cy="252" r="132" fill="#A855F7"><animateTransform attributeName="transform" type="translate" values="0 0; -24 -16; 0 0" dur="21s" repeatCount="indefinite" calcMode="spline" keySplines=".45 0 .55 1;.45 0 .55 1"/></circle><circle cx="108" cy="84" r="204" fill="#7C3AED"><animateTransform attributeName="transform" type="translate" values="0 0; 40 18; 0 0" dur="19s" repeatCount="indefinite" calcMode="spline" keySplines=".45 0 .55 1;.45 0 .55 1"/></circle><circle cx="468" cy="70" r="180" fill="#DB2777"><animateTransform attributeName="transform" type="translate" values="0 0; -36 24; 0 0" dur="23s" repeatCount="indefinite" calcMode="spline" keySplines=".45 0 .55 1;.45 0 .55 1"/></circle><circle cx="330" cy="238" r="216" fill="#4F46E5"><animateTransform attributeName="transform" type="translate" values="0 0; 28 -22; 0 0" dur="27s" repeatCount="indefinite" calcMode="spline" keySplines=".45 0 .55 1;.45 0 .55 1"/></circle></g>
+  <filter id="softlin" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="30"/></filter>
+  <filter id="frostlin" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="48"/></filter>
+  <filter id="grainlin"><feTurbulence type="fractalNoise" baseFrequency=".9" numOctaves="2" stitchTiles="stitch"/><feColorMatrix values="0 0 0 0 .5  0 0 0 0 .5  0 0 0 0 .5  0 0 0 1 0"/></filter>
+  <clipPath id="cliplin"><rect x="14" y="14" width="572" height="252" rx="22"/></clipPath>
+  <linearGradient id="sheenlin" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#fff" stop-opacity="0.132"/>
+    <stop offset=".45" stop-color="#fff" stop-opacity="0"/>
+  </linearGradient>
+  <linearGradient id="edgelin" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#fff" stop-opacity="0.256"/>
+    <stop offset=".5" stop-color="#fff" stop-opacity="0.064"/>
+    <stop offset="1" stop-color="#fff" stop-opacity="0.16"/>
+  </linearGradient>
+</defs>
+<rect width="600" height="280" rx="24" fill="#0A0A10"/>
+<g clip-path="url(#outerlin)"><use href="#blin" filter="url(#softlin)"/></g>
+<clipPath id="outerlin"><rect width="600" height="280" rx="24"/></clipPath>
+<g clip-path="url(#cliplin)">
+  <rect x="14" y="14" width="572" height="252" fill="#0A0A10" opacity="0.35"/>
+  <use href="#blin" filter="url(#frostlin)"/>
+  <rect x="14" y="14" width="572" height="252" fill="#FFFFFF" fill-opacity="0.045"/>
+  <rect x="14" y="14" width="572" height="252" fill="url(#sheenlin)"/>
+</g>
+<rect x="14.5" y="14.5" width="571" height="251" rx="22" fill="none" stroke="url(#edgelin)"/>
+<rect width="600" height="280" rx="24" filter="url(#grainlin)" opacity="0.07"/>
+
+<text x="46" y="70" font-family="ui-monospace,'SF Mono','JetBrains Mono',Menlo,Consolas,monospace" font-size="12" letter-spacing="3" fill="#A7A1B8">CONCEPT · BOOKS × AI</text>
+<g font-family="ui-monospace,'SF Mono','JetBrains Mono',Menlo,Consolas,monospace" font-size="12" fill="#A7A1B8">
+  <rect x="453" y="52" width="101" height="26" rx="13" fill="#FFFFFF" fill-opacity="0.06" stroke="#FFFFFF" stroke-opacity=".12"/>
+  <circle cx="469" cy="65" r="3.5" fill="#E9D5FF">
+    <animate attributeName="opacity" values="1;.35;1" dur="2.4s" repeatCount="indefinite"/>
+  </circle>
+  <text x="479" y="69">Sketching</text>
+</g>
+<text x="44" y="118" font-family="'Iowan Old Style','Palatino Linotype',Palatino,Georgia,'Times New Roman',serif" font-size="36" fill="#F4F1FA" letter-spacing="-.5">Líneas</text>
+<g font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Helvetica,Arial,sans-serif" font-size="16" fill="#A7A1B8"><text x="46" y="150">Book recommendations drawn as a map of literary</text><text x="46" y="174">influences, built from the clues you leave.</text></g>
+<g font-family="ui-monospace,'SF Mono','JetBrains Mono',Menlo,Consolas,monospace" font-size="12" fill="#F4F1FA" fill-opacity=".8"><rect x="46" y="206" width="37" height="26" rx="13" fill="#FFFFFF" fill-opacity="0.06" stroke="#FFFFFF" stroke-opacity=".12"/><text x="65" y="223.5" text-anchor="middle">AI</text><rect x="91.2" y="206" width="68" height="26" rx="13" fill="#FFFFFF" fill-opacity="0.06" stroke="#FFFFFF" stroke-opacity=".12"/><text x="125" y="223.5" text-anchor="middle">Graphs</text><rect x="166.8" y="206" width="98" height="26" rx="13" fill="#FFFFFF" fill-opacity="0.06" stroke="#FFFFFF" stroke-opacity=".12"/><text x="216" y="223.5" text-anchor="middle">Literature</text></g>
+
+</svg>
